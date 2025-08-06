@@ -1,7 +1,7 @@
 interface WalletBalance {
     currency: string;
     amount: number;
-    blockchain: string; // ✅ Thêm blockchain
+    blockchain: string; // Add blockchain definition
 }
 
 interface FormattedWalletBalance extends WalletBalance {

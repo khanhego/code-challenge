@@ -7,47 +7,32 @@ import { useWalletBalances } from './hooks/useWalletBalances';
 import { usePrices } from './hooks/usePrices';
 import { getPriority } from './utils/utils';
 
-// ✅ Interface định nghĩa đầy đủ
-// interface WalletBalance {
-//   currency: string;
-//   amount: number;
-//   blockchain: string; // ✅ Thêm blockchain
-// }
-
-// interface FormattedWalletBalance extends WalletBalance {
-//   formatted: string;
-// }
-
 interface Props extends BoxProps {
   children: React.ReactNode;
 }
-
-// ✅ Giả định các hook được import từ đâu đó
-// declare function useWalletBalances(): WalletBalance[];
-// declare function usePrices(): Record<string, number>;
 
 const WalletPage: React.FC<Props> = (props: Props) => {
   const { children, ...rest } = props;
   const balances = useWalletBalances();
   const prices = usePrices();
 
-  // ✅ useMemo: Lọc balances hợp lệ + sắp xếp
+  // ✅ useMemo: filter balances and sort
   const sortedBalances = useMemo(() => {
     return balances
       .filter((balance : WalletBalance) => {
         const balancePriority = getPriority(balance.blockchain);
-        return balancePriority > -99 && balance.amount > 0; // ✅ Lọc balance hợp lệ
+        return balancePriority > -99 && balance.amount > 0; // ✅ filter correct balance 
       })
       .sort((leftBalance : WalletBalance, rightBalance : WalletBalance) => {
         const leftPriority = getPriority(leftBalance.blockchain);
         const rightPriority = getPriority(rightBalance.blockchain);
         if (leftPriority > rightPriority) return -1;
         if (rightPriority > leftPriority) return 1;
-        return 0; // ✅ Thêm return mặc định
+        return 0; // Add defaut return 
       });
   }, [balances]);
 
-  // ✅ Format balances 1 lần và sử dụng luôn
+  // ✅ Format balances onces and use
   const formattedBalances: FormattedWalletBalance[] = useMemo(() => {
     return sortedBalances.map((balance : WalletBalance) => ({
       ...balance,
@@ -55,7 +40,7 @@ const WalletPage: React.FC<Props> = (props: Props) => {
     }));
   }, [sortedBalances]);
 
-  // ✅ Dùng formattedBalances để render rows
+  // Use formattedBalances for render rows
   const rows = useMemo(() => {
     return formattedBalances.map((balance : FormattedWalletBalance) => {
       const usdValue = prices[balance.currency] * balance.amount;
