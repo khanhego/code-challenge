@@ -4,93 +4,110 @@ import CurrencyDropdown from "./CurrencyDropdown";
 import { fetchCurrencies } from "../network/currencyService";
 import { swapCurrency } from "../network/swapService";
 import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+interface FormValues {
+  sendAmount: number;
+  fromCurrency: string;
+  toCurrency: string;
+}
+
+const schema = yup.object().shape({
+  sendAmount: yup
+    .number()
+    .typeError("Amount must be a number")
+    .required("Amount is required")
+    .positive("Amount must be greater than 0")
+    .max(1000000, "Amount too large"),
+  fromCurrency: yup.string().required("Please select source currency"),
+  toCurrency: yup
+    .string()
+    .required("Please select target currency")
+    .notOneOf([yup.ref("fromCurrency")], "Cannot swap to the same currency"),
+});
 
 const CurrencySwapForm: React.FC = () => {
-  const [sendAmount, setSendAmount] = useState("");
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    register,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+    defaultValues: { sendAmount: 0, fromCurrency: "", toCurrency: "" },
+  });
+
   const [receiveAmount, setReceiveAmount] = useState("");
-  const [fromCurrency, setFromCurrency] = useState("");
-  const [toCurrency, setToCurrency] = useState("");
-  const [debouncedAmount] = useDebounce(sendAmount, 1000);
 
   const { data: currencies = [], isLoading } = useQuery({
     queryKey: ["currencies"],
     queryFn: fetchCurrencies,
     staleTime: 1000 * 60 * 10,
   });
+  console.log('currencies',currencies)
 
   useEffect(() => {
-    if (currencies.length > 0 && !fromCurrency && !toCurrency) {
-      setFromCurrency(currencies[0].code);
-      setToCurrency(currencies[1].id);
+    if (currencies.length > 1) {
+      setValue("fromCurrency", currencies[0].code);
+      setValue("toCurrency", currencies[1].code);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currencies]);
-  // real solution call api every debounce text change, but there is free api, if using this, it will cause to many request 
-  //   useEffect(() => {
-  //     if (!debouncedAmount || isNaN(Number(debouncedAmount))) return;
-  //     swapCurrency(fromCurrency, toCurrency, Number(debouncedAmount))
-  //       .then((result) => setReceiveAmount(result.toFixed(8)))
-  //       .catch(console.error);
-  //   }, [debouncedAmount, fromCurrency, toCurrency]);
+  }, [currencies, setValue]);
 
-  const handleSwap = (e: React.FormEvent) => {
-    e.preventDefault()
-    swapCurrency(fromCurrency, toCurrency, Number(debouncedAmount))
+  const onSubmit = (data: FormValues) => {
+    swapCurrency(data.fromCurrency, data.toCurrency, data.sendAmount)
       .then((result) => setReceiveAmount(result.toFixed(8)))
       .catch(console.error);
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  const onChangeFromCurrency = (value: string) => {
-    console.log("onChangeFromCurrency", value);
-    setFromCurrency(value);
-  };
-  const onChangeToCurrency = (value: string) => {
-    console.log("onChangeToCurrency", value);
-    setToCurrency(value);
-  };
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="exchange-container">
-      <form className="exchange-card" onSubmit={handleSwap}>
+      <form className="exchange-card" onSubmit={handleSubmit(onSubmit)}>
         <h2 className="title">Crypto Exchange</h2>
+
         {/* Send Section */}
         <div className="field">
           <div className="input-group">
             <input
               type="number"
-              value={sendAmount}
-              onChange={(e) => setSendAmount(e.target.value)}
+              step="any"
+              placeholder="Enter amount"
+              {...register("sendAmount")}
             />
-            <div className="dropdown">
-              <CurrencyDropdown
-                value={fromCurrency}
-                currencies={currencies}
-                onChange={onChangeFromCurrency}
-                type="code"
-              />
-            </div>
+            <CurrencyDropdown
+              name="fromCurrency"
+              control={control}
+              currencies={currencies}
+              loading={isLoading}
+              type="code"
+            />
           </div>
+          
         </div>
+        {errors.sendAmount && (
+            <small className="error-text">{errors.sendAmount.message}</small>
+          )}
 
         {/* Receive Section */}
         <div className="field">
           <div className="input-group">
             <input type="text" value={receiveAmount} readOnly />
-            <div className="dropdown">
-              <CurrencyDropdown
-                value={toCurrency}
-                currencies={currencies}
-                onChange={onChangeToCurrency}
-                type="id"
-              />
-            </div>
+            <CurrencyDropdown
+              name="toCurrency"
+              control={control}
+              currencies={currencies}
+              loading={isLoading}
+              type="id"
+            />
           </div>
         </div>
+        {errors.toCurrency && (
+            <small className="error-text">{errors.toCurrency.message}</small>
+          )}
         {/* Exchange Button */}
         <button type="submit" className="exchange-btn">
           Exchange

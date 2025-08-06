@@ -1,5 +1,3 @@
-
-import './App.css'
 import Swap from './Swap'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 

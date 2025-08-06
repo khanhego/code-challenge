@@ -1,43 +1,60 @@
 import React, { useMemo } from "react";
+import { Controller, type Control } from "react-hook-form";
 import type { Currency } from "../network/currencyService";
 import "./CurrencyDropdown.css";
 
 interface CurrencyDropdownProps {
-  value: string;
-  currencies: Currency[];
-  onChange: (value: string) => void;
-  loading?: boolean;
-  type?: 'code' | 'id';
+  name: string;                     
+  control: Control<any>;           
+  currencies: Currency[];           
+  loading?: boolean;               
+  type?: 'code' | 'id';      
+  rules?: object;                
 }
 
 const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
-  value,
+  name,
+  control,
   currencies,
-  onChange,
   loading = false,
-  type = 'code',
+  type = "code",
+  rules = { required: true },
 }) => {
   const options = useMemo(() => {
     return currencies.map((c) => (
-      <option key={type === 'code' ? c.code : c.id} value={type === 'code' ? c.code : c.id}>
-        {type === 'code' ? c.code : c.id} - {c.name}
+      <option key={c.code} value={type === "code" ? c.code : c.symbol.toLowerCase()}>
+        {c.symbol} - {c.name}
       </option>
     ));
   }, [currencies, type]);
+
   return (
-    <div className="currency-dropdown">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={loading}
-      >
-        {loading ? (
-          <option>Loading...</option>
-        ) : (
-          options
-        )}
-      </select>
-    </div>
+    <Controller
+      name={name}
+      control={control}
+      rules={rules}
+      render={({ field, fieldState }) => (
+        <div className="currency-dropdown">
+          <select
+            value={field.value || ""}
+            onChange={(e) => field.onChange(e.target.value)}
+            disabled={loading}
+          >
+            {loading ? (
+              <option>Loading...</option>
+            ) : (
+              <>
+                <option value="">Select currency</option>
+                {options}
+              </>
+            )}
+          </select>
+          {fieldState.error && (
+            <small className="error-text">Please select a currency</small>
+          )}
+        </div>
+      )}
+    />
   );
 };
 
