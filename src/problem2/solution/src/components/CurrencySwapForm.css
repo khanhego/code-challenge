@@ -1,0 +1,94 @@
+.exchange-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #002060;
+  }
+  
+  .exchange-card {
+    width: 380px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-family: "Inter", sans-serif;
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  
+  .field {
+    margin-bottom: 16px;
+  }
+  
+  .field label {
+    display: block;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 6px;
+  }
+  
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: #f8f9fb;
+    border-radius: 12px;
+    padding: 8px 12px;
+    border: 1px solid #e6e8eb;
+  }
+  
+  .input-group input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    outline: none;
+    color: #000; /* Đen cho amount */
+    font-weight: 600;
+  }
+  
+  .dropdown select {
+    border: none;
+    background: #f0f2f6;
+    padding: 6px 8px;
+    font-weight: 600;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .dropdown select:hover {
+    background: #e6e8eb;
+  }
+  
+  .floating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    font-size: 13px;
+    margin: 8px 0 12px;
+  }
+  
+  .exchange-btn {
+    width: 100%;
+    background: #1a73e8;
+    color: #fff;
+    font-size: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .exchange-btn:hover {
+    background: #155ab6;
+  }
+  
